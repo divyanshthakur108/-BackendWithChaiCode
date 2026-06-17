@@ -25,7 +25,7 @@ const userSchema = new Schema(
       trim: true,
       index: true,
     },
-    avtar: {
+    avatar: {
       type: String,
       required: true,
     },
@@ -40,7 +40,7 @@ const userSchema = new Schema(
     ],
     password: {
       type: String,
-      required: [true, "password is required"],
+      required: [true, "Password is required"],
     },
     refreshToken: {
       type: String,
@@ -48,21 +48,21 @@ const userSchema = new Schema(
   },
   {
     timestamps: true,
-  },
+  }
 );
 
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
+
   this.password = await bcrypt.hash(this.password, 10);
-  next();
 });
 
-userSchema.methods.isPasswordCorrect = async function (password) {
-  await bcrypt.compare(password, this.password);
+userSchema.methods.isPasswordCorrect = function (password) {
+  return bcrypt.compare(password, this.password);
 };
 
-userSchema.methods.genrateAccessToken = async function () {
- return jwt.sign(
+userSchema.methods.generateAccessToken = function () {
+  return jwt.sign(
     {
       _id: this._id,
       email: this.email,
@@ -70,21 +70,21 @@ userSchema.methods.genrateAccessToken = async function () {
       fullname: this.fullname,
     },
     process.env.ACCESS_TOKEN_SECRET,
-
     {
-      exprisIn: process.env.ACCESS_TOKEN_EXPIRY,
-    },
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
+    }
   );
 };
-userSchema.methods.genrateRefreshToken = async function () {
-   return jwt.sign(
+
+userSchema.methods.generateRefreshToken = function () {
+  return jwt.sign(
     {
       _id: this._id,
     },
     process.env.REFRESH_TOKEN_SECRET,
     {
-      exprisIn: process.env.REFRESH_TOKEN_EXPIRY,
-    },
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
+    }
   );
 };
 
